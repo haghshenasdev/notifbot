@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\ChatbotData;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -14,15 +13,17 @@ Route::post('/telegram_webhook', [\App\Http\Controllers\NotifBot::class,'telegra
 Route::middleware('auth:sanctum')->get('/get-notifbot-code', function (Request $request) {
     do {
         $randomCode = Str::random(6);
-    } while (ChatbotData::where('notifbot_code', $randomCode)->exists());
-    ChatbotData::query()->create(['user_id' => $request->user()->id,'notifbot_code' => $randomCode]);
+    } while (User::where('notifbot_code', $randomCode)->exists());
+    $user = $request->user();
+    $user->notifbot_code = $randomCode;
+    $user->save();
     return $randomCode;
 });
 
 Route::middleware('auth:sanctum')->get('/send-notif-tst',function (){
     $notif = new \App\Http\Controllers\NotifBot();
     $notif->state = 'bale';
-    $notif->sendMessageByUser(auth()->id(),'اطلاعیه تست 1');
+    $notif->sendMessageByUser(\Illuminate\Support\Facades\Auth::user(),'اطلاعیه تست 1');
 
     return 'اطلاعیه ارسال شد';
 });

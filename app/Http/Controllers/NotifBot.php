@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ChatbotData;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class NotifBot extends Controller
@@ -44,18 +44,18 @@ class NotifBot extends Controller
             if ($text == '/start') {
                 $this->sendMessage($chatId, "لطفاً کد دریافت اعلان خود را وارد کنید:");
             } elseif ($text == '/close') {
-                if ($botData = ChatbotData::where($this->state . '_notifbot_id', $chatId)->first()) {
-                    $botData->{$this->state . '_notifbot_id'} = null;
-                    $botData->save();
+                if ($user = User::where($this->state . '_notifbot_id', $chatId)->first()) {
+                    $user->notifbot_id = null;
+                    $user->save();
                     $this->sendMessage($chatId, "سیستم اعلانات غیر فعال شد . \n برای راه اندازی مجدد کد دریافت شده از سامانه را وارد نمایید.");
                 } else {
                     $this->sendMessage($chatId, 'اعلانات برای شما فعال نشده است.');
                 }
             } else {
-                if ($botData = ChatbotData::where('notifbot_code', $text)->first()) {
-                    $botData->{$this->state . '_notifbot_id'} = $chatId;
-                    $botData->notifbot_code = null;
-                    $botData->save();
+                if ($user = User::where('notifbot_code', $text)->first()) {
+                    $user->{$this->state . '_notifbot_id'} = $chatId;
+                    $user->notifbot_code = null;
+                    $user->save();
                     $this->sendMessage($chatId, "✅کد شما تایید شد.\n اطلاع رسانی‌ها از این به بعد برای شما از طریق همین ربات ارسال خواهد شد.\n\nبرای غیر فعال کردن دریافت اعلانات دستور close/ را ارسال نمایید.");
                 } else {
                     $this->sendMessage($chatId, "❌ کد نامعتبر است. لطفاً دوباره تلاش کنید.");
@@ -71,9 +71,9 @@ class NotifBot extends Controller
         file_get_contents($url);
     }
 
-    public function sendMessageByUser($userId, $text): void
+    public function sendMessageByUser(User $user, $text): void
     {
-        $chatId = ChatbotData::where('user_id', $userId)->first()->{$this->state . '_notifbot_id'};
-        $this->sendMessage($chatId, $text);
+        $chatId = $user-> {$this->state . '_notifbot_id'};
+        $this->sendMessage($chatId,$text);
     }
 }
